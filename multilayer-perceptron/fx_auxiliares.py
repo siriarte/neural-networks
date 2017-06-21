@@ -52,7 +52,7 @@ def guardar_log_en_archivo(nombre_archivo, error_por_epoca):
 
 
 def fx_umbral(umbral,valor):
-    if(valor>umbral):
+    if(valor[0]>umbral):
         return 1
     else:
-        return 0
+        return -1

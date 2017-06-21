@@ -8,7 +8,7 @@ class RedNeuronal(object):
 
     # Constructor de la Red Neuronal
     def __init__(self, cantidad_neuronas_entrada, neuronas_de_capas_ocultas, cantidad_neuronas_salida,
-                 momentum=0, tamano_batch=1, early_stop=0, parametros_adaptativos=0, fx_activacion = 0, log_en_archivo=''):
+                 momentum=0, tamano_batch=1, early_stop=0, parametros_adaptativos=0, fx_activacion = 0, log_en_archivo='', distribucion_pesos = 0):
 
         # Seteo de variables
         self.bias = 1.0
@@ -18,7 +18,9 @@ class RedNeuronal(object):
         self.early_stop = early_stop
         self.parametros_adaptativos = parametros_adaptativos
         self.log_en_archivo = log_en_archivo
-        self.error_por_epoca = []
+        self.error_entrenamiento_por_epoca = []
+        self.error_validacion_por_epoca = []
+        self.distribucion_pesos = distribucion_pesos
 
         # Funcion de activacion
         if fx_activacion == 0:
@@ -32,14 +34,14 @@ class RedNeuronal(object):
         self.capas = []
 
         # Primera capa oculta n=0
-        self.capas.append(capa.CapaNeuronal(cantidad_neuronas_entrada, neuronas_de_capas_ocultas[0]))
+        self.capas.append(capa.CapaNeuronal(cantidad_neuronas_entrada, neuronas_de_capas_ocultas[0], self.distribucion_pesos))
 
         # Capas ocultas de n=1...k
         for i in range(1, len(neuronas_de_capas_ocultas)):
-            self.capas.append(capa.CapaNeuronal(neuronas_de_capas_ocultas[i - 1], neuronas_de_capas_ocultas[i]))
+            self.capas.append(capa.CapaNeuronal(neuronas_de_capas_ocultas[i - 1], neuronas_de_capas_ocultas[i], self.distribucion_pesos))
 
         # Capa de salida n=k+1
-        self.capas.append(capa.CapaNeuronal(neuronas_de_capas_ocultas[-1], cantidad_neuronas_salida))
+        self.capas.append(capa.CapaNeuronal(neuronas_de_capas_ocultas[-1], cantidad_neuronas_salida, self.distribucion_pesos))
 
     # Calcula la cantidad de neuronas de la red
     def cantidad_axones_red(self):
@@ -201,8 +203,11 @@ class RedNeuronal(object):
         # Ciclos para parametros adapativos
         ciclos_parametros_adaptativos = 0
 
-        # Guarda lo que me interesa graficar
-        error_por_epoca = []
+        # Guarda el error de entrenamiento por epoca
+        self.error_entrenamiento_por_epoca = []
+
+        # Guarda el error de validacion por epoca
+        self.error_validacion_por_epoca = []
 
         for epoca in range(numero_de_epocas):
 
@@ -265,17 +270,23 @@ class RedNeuronal(object):
             # Promedio el error
             delta_error = delta_error / 2 / len(set_entrenamiento)
 
+            # Error validacion
+            validacion_error = self.calcular_error_validacion(set_validacion, salida_validacion)
+
+            # Guardo el error de validacion x epoca
+            self.error_validacion_por_epoca.append([epoca, validacion_error])
+
             # Imprimo resultado
-            print('->EPOCA=%d, ETA=%.3f, ERROR=%.3f, MOMENTUM=%.3f, BATCH=%d, EARLY-STOP=%.2f, PARAMETROS ADAPTATIVOS=%d'
-                  % (epoca, eta, delta_error, self.momentum, self.tamano_batch, self.early_stop, self.parametros_adaptativos))
+            print('->EPOCA=%d, ETA=%.3f, ERROR=%.3f, ERROR_VAL=%0.3f, MOMENTUM=%.3f, BATCH=%d, EARLY-STOP=%.2f, PARAMETROS ADAPTATIVOS=%d'
+                  % (epoca, eta, delta_error, validacion_error,self.momentum, self.tamano_batch, self.early_stop, self.parametros_adaptativos))
 
             # Si parametros adaptativos está activado y pasó la primera epoca
             if self.parametros_adaptativos and epoca > 0:
                 if self.parametros_adaptativos == ciclos_parametros_adaptativos:
                     if delta_error < delta_error_anterior:
-                        eta+=0.01
+                        eta+=eta*0.01
                     else:
-                        eta-=eta*0.02
+                        eta-=eta*0.5
                     ciclos_parametros_adaptativos = 0
                     delta_error_anterior = delta_error
                 else:
@@ -290,23 +301,70 @@ class RedNeuronal(object):
             if self.early_stop:
                 # error = self.calcular_error_validacion(set_validacion, salida_validacion)
                 # print ("ERROR VALIDACION   %F" % (error))
-                if self.calcular_error_validacion(set_validacion, salida_validacion) <= self.early_stop:
+                if validacion_error <= self.early_stop:
                     print("--------EARLY STOP BREAK-------------")
                     break
 
             # Guardo en el registro
-            self.error_por_epoca.append([epoca, delta_error])
+            self.error_entrenamiento_por_epoca.append([epoca, delta_error])
 
         # Si esta activada la opción dejo el resultado en un archivo
         if self.log_en_archivo!='':
-            fx_auxiliares.guardar_log_en_archivo(self.log_en_archivo, self.error_por_epoca)
+            fx_auxiliares.guardar_log_en_archivo(self.log_en_archivo, self.error_entrenamiento_por_epoca)
 
 
-    def get_error_por_epoca(self):
+    def get_error_entrenamiento_por_epoca(self):
         x = []
         y = []
-        for elem in self.error_por_epoca:
+        for elem in self.error_entrenamiento_por_epoca:
             x.append(elem[0])
             y.append(elem[1])
 
         return [x,y]
+
+    def get_error_validacion_por_epoca(self):
+        x = []
+        y = []
+        for elem in self.error_validacion_por_epoca:
+            x.append(elem[0])
+            y.append(elem[1])
+
+        return [x,y]
+
+    def test_ej1(self, datos_testing_entrada, datos_testing_resultado):
+        resultados_correctos = 0
+
+        for i in range(len(datos_testing_entrada)):
+
+            # Calculo el valor de salida de la red
+            salida_red = self.forward_propagation(datos_testing_entrada[i])
+            valor_salida = fx_auxiliares.fx_umbral(0.5, salida_red)
+            valor_esperado = datos_testing_resultado[i]
+
+            if valor_esperado[0] == valor_salida:
+                resultados_correctos+=1
+
+
+        return resultados_correctos / len(datos_testing_entrada)
+
+    def test_ej2(self, datos_testing_entrada, datos_testing_resultado):
+        # Error cuadratico por epoca
+        resultados_correctos = 0
+        epsilon = 0.01
+
+        for i in range(len(datos_testing_entrada)):
+
+            # Calculo el valor de salida de la red
+            salida_red = self.forward_propagation(datos_testing_entrada[i])
+            valor_esperado = datos_testing_resultado[i]
+            suma_error = []
+            for i in range(len(salida_red)):
+                suma_error.append((valor_esperado[0] - salida_red[0]) ** 2)
+
+            if sum(suma_error)/2 <= epsilon:
+                resultados_correctos+=1
+
+
+        return resultados_correctos / len(datos_testing_entrada)
+
+

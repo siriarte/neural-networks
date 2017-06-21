@@ -6,18 +6,15 @@ ejercicio_1_file = 'tp1_ej1_training.csv'
 ejercicio_2_file = 'tp1_ej2_training.csv'
 
 
-def normalizar_vector(vector):
+def normalizar_vector_ej2(vector):
     min_index = vector.argmin()
     max_index = vector.argmax()
     min = vector[min_index]
     max = vector[max_index]
-    #media = 0 #max - min #np.mean(vector)
-    #desvio = (max - min) / 2 #np.std(vector)
 
     vector_normalizado = []
 
     for value in vector:
-        #vector_normalizado.append((value - media) / desvio)
         vector_normalizado.append(2*(value-min)/((max-min))-1)
 
     v = np.array(vector_normalizado)
@@ -28,11 +25,25 @@ def normalizar_vector(vector):
 
     return vector_normalizado
 
+def normalizar_vector_ej1(vector):
+    media = np.mean(vector)
+    desvio = np.std(vector)
 
-def normalizar_matriz(matriz):
+    vector_normalizado = []
+
+    for value in vector:
+        vector_normalizado.append((value - media) / desvio)
+
+    return vector_normalizado
+
+
+def normalizar_matriz(matriz, ejercicio):
     ret = []
     for c in matriz:
-        ret.append(normalizar_vector(c))
+        if(ejercicio==1):
+            ret.append(normalizar_vector_ej2(c))
+        else:
+            ret.append(normalizar_vector_ej2(c))
     return ret
 
 
@@ -60,7 +71,7 @@ def datos_ejercicio_1():
 
     data_parsed = np.array(data_parsed)
     data_parsed_transpuesta = data_parsed.transpose()
-    data_normalizada_traspuesta = normalizar_matriz(data_parsed_transpuesta)
+    data_normalizada_traspuesta = normalizar_matriz(data_parsed_transpuesta, 1)
     data_normalizada_traspuesta = np.array(data_normalizada_traspuesta)
     data_normalizada =  data_normalizada_traspuesta.transpose().tolist()
     random.shuffle(data_normalizada)
@@ -94,7 +105,7 @@ def datos_ejercicio_2():
 
     data_parsed = np.array(data_parsed)
     data_parsed_transpuesta = data_parsed.transpose()
-    data_normalizada_traspuesta = normalizar_matriz(data_parsed_transpuesta)
+    data_normalizada_traspuesta = normalizar_matriz(data_parsed_transpuesta, 2)
     data_normalizada_traspuesta = np.array(data_normalizada_traspuesta)
     data_normalizada = data_normalizada_traspuesta.transpose().tolist()
     random.shuffle(data_normalizada)
