@@ -1,9 +1,29 @@
 import csv
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 
 FILE_PATH_DATASET = 'tp2_training_dataset.csv'
-NEURONAS_SALIDA = 9
+NEURONAS_SALIDA = 3
 
+
+def grafico_3d(prediccion, file_name, columna_clases,ang_elev =  None ,ang_azim = None):
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    longitud_pred = len(prediccion)
+    xs = []
+    for i in range(0,longitud_pred):
+        xs.append(prediccion[i][0])
+    ys = []
+    for i in range(0,longitud_pred):
+        ys.append(prediccion[i][1])
+    zs = []
+    for i in range(0,longitud_pred):
+        zs.append(prediccion[i][2])
+    ax.view_init(elev=ang_elev, azim=ang_azim)
+    ax.scatter(xs, ys, zs,c = columna_clases)
+    plt.savefig(file_name)
+    #plt.show()
 
 # Parser dataset
 def parsear_dataset():
@@ -21,6 +41,16 @@ def parsear_dataset():
     finally:
         f.close()
     return categoria, dataset
+
+def centrar_matriz(matriz):
+    matriz_t = np.array(matriz).T
+    ret = []
+    for columna in matriz_t:
+        media = np.mean(columna)
+        ret.append(columna-media)
+
+    return np.array(ret).T
+
 
 
 class Hebbian(object):
@@ -42,48 +72,96 @@ class Hebbian(object):
     def entrenar(self, dataset_entrada, dataset_salida, epocas, eta, algoritmo):
         # for X en D:
         #     Y = X . W
-        #     for j en [1..M]:
-        #         for i en [1..N]:
+        #     for j en [1..M]: // cantidad outputs
+        #         for i en [1..N]: // cantidad inputs
         #             X~_i = 0
-        #             for k en [1..Q]
-        #                 X~_i += Y_k . W_ik
+        #             for k en [1..Q]  //cota algoritmo
+        #                 X~_i += Y_k . W_ik //mini-delta
         #             DeltaW_ij = eta . (X_i - X~_i) . Y_j
         #     W += DeltaW
         for epoca in range(epocas):
-
+            print("EPOCA: {%d}"% (epoca))
+            # for X en D:
             for X in dataset_entrada:
+                #Y = X.W
                 y = []
-                for neurona_salida_i in range(self.n_salida):
-                    y_i = np.dot(X, self.W[neurona_salida_i])
+                for output in range(self.n_salida):
+                    y_i = np.dot(X, self.W[output])
                     y.append(y_i)
 
-                for neurona_salida_i in range(self.n_salida):
+                #for j en[1..M]:
+                for j in range(self.n_salida):
                     w_delta = []
-                    if algoritmo == "hebb":
-                        intervalo = 0
+                    #if algoritmo == "hebb":
+                     #   intervalo = 0
 
-                    elif algoritmo == "oja1":
-                        intervalo = 1
+                    #elif algoritmo == "oja1":
+                    #    intervalo = 1
 
-                    elif algoritmo == "oja":
+                    if algoritmo == "oja":
                         intervalo = len(self.W)
 
                     elif algoritmo == "sanger":
-                        intervalo = neurona_salida_i + 1
+                        intervalo = output + 1
 
-                    for j, x_i in enumerate(X):
+                    #for i en[1..N]:
+                    for i in range(len(X)):
                         x = 0
+                        #for k en[1..Q]
                         for k in range(intervalo):
-                            x += y[k] * self.W[k]
-                        w_delta.append(eta * (x_i - x) * neurona_salida_i)
-                    self.W[neurona_salida_i] = np.sum([self.W[neurona_salida_i], np.array(w_delta)], axis=0)
-                    print(y_i)
+                            #X~_i += Y_k.W_ik // mini - delta
+                            x += y[k] * self.W[k][i]
+
+                        #DeltaW_ij = eta.(X_i - X~_i).Y_j
+                        w_delta.append(eta * (X[i] - x) * y[j])
+                    
+                    self.W[output] = np.sum([self.W[output], np.array(w_delta)], axis=0)
+
+    def testear_red(self, dataset, clases):
+        resultados = []
+        for X in dataset:
+            y = []
+            for output in range(self.n_salida):
+                y_i = np.dot(X, self.W[output])
+                y.append(y_i)
+            resultados.append(y[0:3])
+        return resultados
+
+    def salvar_matriz_pesos(self):
+        np.savetxt("matriz_pesos.csv", self.W, delimiter=",")
+
+    def setear_matriz_pesos(self, nombre_archivo):
+        f = open(nombre_archivo, 'rt')
+        matriz_pesos = []
+        try:
+            reader = csv.reader(f)
+            for row in reader:
+                matriz_pesos_row = []
+                for i in row:
+                    matriz_pesos_row.append(float(i))
+                matriz_pesos.append(matriz_pesos_row)
+        finally:
+            f.close()
+        self.W = matriz_pesos
+
+
 
 
 def prueba_red():
-    categoria, dataset = parsear_dataset()
+    categorias, dataset = parsear_dataset()
+    data_centrado = centrar_matriz(dataset)
     red = Hebbian(len(dataset[0]), NEURONAS_SALIDA)
-    red.entrenar(dataset, [], 300, 0.05, 'sanger')
+    #red.entrenar(data_centrado, [], 200, 0.01, 'oja')
+    red.setear_matriz_pesos('matriz_pesos.csv')
+    resultados = red.testear_red(data_centrado, categorias)
+    grafico_3d(resultados,'g_100_180_0_600', categorias,180,0)
+    grafico_3d(resultados, 'g_100_0_0_600' ,categorias,)
+    grafico_3d(resultados, 'g_100_90_90_600',categorias,90,90)
+    grafico_3d(resultados, 'g_100_180_45_600', categorias, 180, 45)
+    red.salvar_matriz_pesos()
+
+
+
 
 
 prueba_red()
