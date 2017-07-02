@@ -80,7 +80,7 @@ class Hebbian(object):
         #             DeltaW_ij = eta . (X_i - X~_i) . Y_j
         #     W += DeltaW
         for epoca in range(epocas):
-            print("EPOCA: {%d}"% (epoca))
+            print('ENTRENANDO -> dataset: %d --  algoritmo: %s -- epoca: %d/%d -- eta: %f  -- neuronas salida: %d' % (len(dataset_entrada), algoritmo, epoca, epocas, eta, self.n_salida))
             # for X en D:
             for X in dataset_entrada:
                 #Y = X.W
@@ -92,11 +92,6 @@ class Hebbian(object):
                 #for j en[1..M]:
                 for j in range(self.n_salida):
                     w_delta = []
-                    #if algoritmo == "hebb":
-                     #   intervalo = 0
-
-                    #elif algoritmo == "oja1":
-                    #    intervalo = 1
 
                     if algoritmo == "oja":
                         intervalo = len(self.W)
@@ -114,7 +109,8 @@ class Hebbian(object):
 
                         #DeltaW_ij = eta.(X_i - X~_i).Y_j
                         w_delta.append(eta * (X[i] - x) * y[j])
-                    
+
+                    # W += DeltaW
                     self.W[output] = np.sum([self.W[output], np.array(w_delta)], axis=0)
 
     def testear_red(self, dataset, clases):
@@ -127,8 +123,8 @@ class Hebbian(object):
             resultados.append(y[0:3])
         return resultados
 
-    def salvar_matriz_pesos(self):
-        np.savetxt("matriz_pesos.csv", self.W, delimiter=",")
+    def salvar_matriz_pesos(self, file_name):
+        np.savetxt(file_name, self.W, delimiter=",")
 
     def setear_matriz_pesos(self, nombre_archivo):
         f = open(nombre_archivo, 'rt')
@@ -148,17 +144,26 @@ class Hebbian(object):
 
 
 def prueba_red():
-    categorias, dataset = parsear_dataset()
-    data_centrado = centrar_matriz(dataset)
-    red = Hebbian(len(dataset[0]), NEURONAS_SALIDA)
-    #red.entrenar(data_centrado, [], 200, 0.01, 'oja')
-    red.setear_matriz_pesos('matriz_pesos.csv')
-    resultados = red.testear_red(data_centrado, categorias)
-    grafico_3d(resultados,'g_100_180_0_600', categorias,180,0)
-    grafico_3d(resultados, 'g_100_0_0_600' ,categorias,)
-    grafico_3d(resultados, 'g_100_90_90_600',categorias,90,90)
-    grafico_3d(resultados, 'g_100_180_45_600', categorias, 180, 45)
-    red.salvar_matriz_pesos()
+    for algoritmo in ['oja', 'sanger']:
+        for neuronas_salida in [3, 9]:
+            for epocas in [100, 200, 300]:
+                for eta in [0.0001, 0.001, 0.01]:
+                    categorias, dataset = parsear_dataset()
+                    data_centrado = centrar_matriz(dataset)
+                    red = Hebbian(len(dataset[0]), neuronas_salida)
+                    str_eta = str(eta)[2:]
+                    red.entrenar(data_centrado, [], epocas, eta, algoritmo)
+                    archivo_salida_cvs = r'matrices_de_pesos/m_%s_%d_%s_%d.csv' % (algoritmo, epocas, str_eta, neuronas_salida)
+                    red.salvar_matriz_pesos(archivo_salida_cvs)
+
+
+#red.setear_matriz_pesos('matriz_pesos.csv')
+#resultados = red.testear_red(data_centrado, categorias)
+#grafico_3d(resultados,'g_100_180_0_600', categorias,180,0)
+#grafico_3d(resultados, 'g_100_0_0_600' ,categorias,)
+#grafico_3d(resultados, 'g_100_90_90_600',categorias,90,90)
+#grafico_3d(resultados, 'g_100_180_45_600', categorias, 180, 45)
+
 
 
 
