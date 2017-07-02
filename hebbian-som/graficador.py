@@ -13,12 +13,14 @@ def graficar(datos, columna_clases):
         X.append(elem[2])
         Y.append(elem[1])
         Z.append(elem[0])
+    cmap = plt.get_cmap('jet',8)
 
     # load some test data for demonstration and plot a wireframe
     #ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
-    ax.scatter(X, Y, Z, c=columna_clases)
+    ax.scatter(X, Y, Z, c=columna_clases, cmap=cmap)
     # rotate the axes and update
     #for angle in range(0, 360):
+
     ax.view_init(30, 0)
     plt.draw()
     plt.show()
@@ -36,11 +38,11 @@ def partir_datos_en_tres(datos):
 
 categorias, dataset = hebbian.parsear_dataset()
 data_centrado = hebbian.centrar_matriz(dataset)
-red = hebbian.Hebbian(len(dataset[0]), 3)
-red.setear_matriz_pesos('matrices_de_pesos/m_sanger_sanger_100_0001_3.csv')
+red = hebbian.Hebbian(len(dataset[0]), 9)
+red.setear_matriz_pesos('matrices_de_pesos/m_oja_200_001_9.csv')
 resultados = red.testear_red(data_centrado, categorias)
-graficar(resultados, categorias)
-#p,s,t = partir_datos_en_tres(resultados)
-#graficar(p, categorias)
-#graficar(s, categorias)
-#graficar(t, categorias)
+#graficar(resultados, categorias)
+p,s,t = partir_datos_en_tres(resultados)
+graficar(p, categorias)
+graficar(s, categorias)
+graficar(t, categorias)

@@ -120,7 +120,7 @@ class Hebbian(object):
             for output in range(self.n_salida):
                 y_i = np.dot(X, self.W[output])
                 y.append(y_i)
-            resultados.append(y[0:3])
+            resultados.append(y)
         return resultados
 
     def salvar_matriz_pesos(self, file_name):
@@ -169,4 +169,4 @@ def prueba_red():
 
 
 
-prueba_red()
+#prueba_red()
