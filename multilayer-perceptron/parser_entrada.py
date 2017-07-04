@@ -39,9 +39,14 @@ def normalizar_vector_ej1(vector):
 
 def normalizar_matriz(matriz, ejercicio):
     ret = []
+    primera_columna = True
     for c in matriz:
         if(ejercicio==1):
-            ret.append(normalizar_vector_ej2(c))
+            if primera_columna:
+                ret.append(c)
+                primera_columna = False
+            else:
+                ret.append(normalizar_vector_ej1(c))
         else:
             ret.append(normalizar_vector_ej2(c))
     return ret
@@ -62,7 +67,7 @@ def datos_ejercicio_1():
     for row in data:
         row_fixed = []
         if(row[0]=='M'):
-            row_fixed.append(float(-1))
+            row_fixed.append(float(0))
         else:
             row_fixed.append(float(1))
         for i in range(1, len(row)):

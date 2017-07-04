@@ -18,11 +18,11 @@ def logistica_vs_tangente():
 
     # Entreno red para logistica
     red_1 = rn.RedNeuronal(tamanio_entrada, [10, 10], tamanio_salida, 0, 1, 0, 0, 1, '')
-    red_1.entrenar(datos_entrenamiento, datos_entrenamiento_resultados, datos_validacion, datos_validacion_resultados, 0.05, 300)
+    red_1.entrenar(datos_entrenamiento, datos_entrenamiento_resultados, datos_validacion, datos_validacion_resultados, 0.1, 300)
 
     # Entreno red para tangente
     red_2 = rn.RedNeuronal(tamanio_entrada, [10, 10], tamanio_salida, 0, 1, 0, 0, 0, '')
-    red_2.entrenar(datos_entrenamiento, datos_entrenamiento_resultados, datos_validacion, datos_validacion_resultados, 0.05, 300)
+    red_2.entrenar(datos_entrenamiento, datos_entrenamiento_resultados, datos_validacion, datos_validacion_resultados, 0.1, 300)
 
     # Ploteo
     [x1, y1] = red_1.get_error_entrenamiento_por_epoca()

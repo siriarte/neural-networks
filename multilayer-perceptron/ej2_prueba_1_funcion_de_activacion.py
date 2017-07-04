@@ -29,12 +29,12 @@ def logistica_vs_tangente():
     # Entreno red_0
     red_0 = rn.RedNeuronal(cantidad_neuronas_entrada, [8, 8], cantidad_neurona_salida, 0, 1, 0, 0, 0)
     red_0.entrenar(datos_entrenamiento_entrada, datos_entrenamiento_resultados, datos_validacion_entrada,
-                   datos_validacion_resultados, 0.05, 300)
+                   datos_validacion_resultados, 0.1, 300)
 
     # Entreno red_1
-    red_1 = rn.RedNeuronal(cantidad_neuronas_entrada, [8, 8], cantidad_neurona_salida, 0, 1, 0, 1, 1)
+    red_1 = rn.RedNeuronal(cantidad_neuronas_entrada, [8, 8], cantidad_neurona_salida, 0, 1, 0, 1, 0)
     red_1.entrenar(datos_entrenamiento_entrada, datos_entrenamiento_resultados, datos_validacion_entrada,
-                   datos_validacion_resultados, 0.05, 300)
+                   datos_validacion_resultados, 0.1, 300)
 
     # Ploteo entrenamiento
     [x0, y0] = red_0.get_error_entrenamiento_por_epoca()
@@ -55,8 +55,8 @@ def logistica_vs_tangente():
     [x1, y1] = red_1.get_error_validacion_por_epoca()
     plt.cla()
     plt.clf()
-    plt.plot(x0, y0, label='Sin parametros adaptativos')
-    plt.plot(x1, y1, label='Con parametros adaptativos')
+    plt.plot(x0, y0, label='Función tangencial')
+    plt.plot(x1, y1, label='Función logistica')
     plt.xlabel('EPOCAS')
     plt.ylabel('ERROR VALIDACION')
     plt.grid(True)
