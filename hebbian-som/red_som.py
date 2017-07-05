@@ -23,11 +23,12 @@ class PerceptronSOM:
     def minimo_indice(self, x):
         y = norm_col(x - self.W)
         min_index = np.argmin(y)
+        #print(min_index)
         return min_index
     
     def coordena_ganadora(self, min_index):
         coord_col = min_index%self.columnas_output
-        coord_fila = int(np.ceil(min_index/self.columnas_output))-1
+        coord_fila = int(min_index/self.filas_output)
         return [coord_fila, coord_col]
 
     def cordenada_minima_distancia(self, x):
@@ -35,31 +36,12 @@ class PerceptronSOM:
         coordenada_minima_distancia = self.coordena_ganadora(min_index)
         return coordenada_minima_distancia
 
-    def vecino(self, position, sigma):
-        filas = self.filas_output
-        columnas = self.columnas_output
-        ret_matriz = np.matrix(np.zeros(filas*columnas))
-        ret_matriz = ret_matriz.reshape(filas, columnas)
-        for i in range(filas):
-            for j in range(columnas):
-                dist_ij2posicion = (i-position[0])**2 + (j-position[1])**2
-                if sigma !=0:
-                    dist_ij2posicion = dist_ij2posicion * 0.5 *(1/sigma)
-                else:
-                    raise Exception('SIGMA', ' ES 0')
-                ret_matriz[i,j] = np.e**(-dist_ij2posicion)
-        return ret_matriz.reshape(1, self.filas_output*self.columnas_output)
+    def vecino(self, coordenada_actual, coordenada_ganadora, sigma):
+        dist_ij2posicion = (coordenada_actual[0]-coordenada_ganadora[0])**2 + (coordenada_actual[1]-coordenada_ganadora[1])**2
+        dist_ij2posicion = (dist_ij2posicion * 2) / (2*(sigma**2))
+        return  np.e**(-dist_ij2posicion)
 
-    def correccion(self, x, eta, sigma):
-        x = np.matrix(x)
-        min_index = self.minimo_indice(x)
-        cordenada_ganadora = self.coordena_ganadora(min_index)
-        vecindad = self.vecino(cordenada_ganadora, sigma)
-        y = x - self.W
-        delta = np.dot(flatten(vecindad),y)
-        self.W += eta * delta
-        return self
-            
+
     def train_som(self, data_set, eta=0.1, sigma=5, epocas=1000):
         it = 0
         eta_inicial = eta
@@ -70,8 +52,23 @@ class PerceptronSOM:
             print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- eta: %f  -- inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
                 (len(data_set), epoca, epocas, eta, eta_inicial, sigma, sigma_inicial, self.filas_output, self.columnas_output))
 
+            coordenada_ganadora = []
+
+            # Para cada documento
             for x in data_set:
-                self.correccion(x, eta, sigma)
+
+                # Busco la coordenada de la distancia más corta
+                x = np.matrix(x)
+                min_index = self.minimo_indice(x)
+                coordenada_ganadora = self.coordena_ganadora(min_index)
+
+                for i in range(self.filas_output):
+                    for j in range(self.columnas_output):
+                        fx_vecindad = self.vecino([i, j], coordenada_ganadora, sigma)
+                        y = np.subtract(x, self.W[i+j])
+                        delta = fx_vecindad * y
+                        self.W[i+j] += eta * delta
+
 
             it+=1
             if it < (epocas * 3 / 4):
@@ -92,12 +89,16 @@ class PerceptronSOM:
             for _ in range(self.columnas_output):
                 matriz_neuronas[i].append([])
 
+        print(matriz_neuronas)
+
         for i in range(cantidad_entradas):
             x = np.matrix(data_set[i])
             min_index = self.minimo_indice(x)
+            print(min_index)
             coordenada = self.coordena_ganadora(min_index)
             matriz_neuronas[coordenada[0]][coordenada[1]].append(categorias[i])
 
+        print(matriz_neuronas)
         resultados = np.zeros((self.filas_output, self.columnas_output))
         for i in range(self.filas_output):
             for j in range(self.columnas_output):

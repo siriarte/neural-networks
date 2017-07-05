@@ -27,7 +27,7 @@ def main():
     categorias, data_set_entrada = habbian.parsear_dataset()
 
     # Tamaño de los sets, entrenamiento = 100% validacion = 0%
-    tamanio_entrenamiento = int(len(data_set_entrada) * 1)
+    tamanio_entrenamiento = int(len(data_set_entrada) * 0.4)
 
     # Entrenamiento
     datos_entrenamiento_entrada = data_set_entrada[:tamanio_entrenamiento]
