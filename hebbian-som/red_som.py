@@ -2,7 +2,6 @@ from math import e, log
 import numpy as np
 from numpy import linalg as LA
 import red_hebbian as hebbian
-import pandas as pd
 import matplotlib.pyplot as plt
 
 def norm_col(x):
@@ -41,7 +40,6 @@ class PerceptronSOM:
         dist_ij2posicion = (dist_ij2posicion * 2) / (2*(sigma**2))
         return  np.e**(-dist_ij2posicion)
 
-
     def train_som(self, data_set, eta=0.1, sigma=5, epocas=1000):
         it = 0
         eta_inicial = eta
@@ -65,13 +63,14 @@ class PerceptronSOM:
                 for i in range(self.filas_output):
                     for j in range(self.columnas_output):
                         fx_vecindad = self.vecino([i, j], coordenada_ganadora, sigma)
-                        y = np.subtract(x, self.W[i+j])
+                        posicion_matriz_pesos = i*self.filas_output+j
+                        y = np.subtract(x, self.W[posicion_matriz_pesos])
                         delta = fx_vecindad * y
-                        self.W[i+j] += eta * delta
+                        self.W[posicion_matriz_pesos] += eta * delta
 
 
             it+=1
-            if it < (epocas * 3 / 4):
+            if it < (epocas * 0.6):
                 sigma, eta = self.variar_sigma_eta(it, sigma_inicial, t1_sigma, eta_inicial, t2_eta)
 
         return self
@@ -89,8 +88,6 @@ class PerceptronSOM:
             for _ in range(self.columnas_output):
                 matriz_neuronas[i].append([])
 
-        print(matriz_neuronas)
-
         for i in range(cantidad_entradas):
             x = np.matrix(data_set[i])
             min_index = self.minimo_indice(x)
@@ -98,7 +95,6 @@ class PerceptronSOM:
             coordenada = self.coordena_ganadora(min_index)
             matriz_neuronas[coordenada[0]][coordenada[1]].append(categorias[i])
 
-        print(matriz_neuronas)
         resultados = np.zeros((self.filas_output, self.columnas_output))
         for i in range(self.filas_output):
             for j in range(self.columnas_output):
