@@ -3,6 +3,7 @@ import numpy as np
 from numpy import linalg as LA
 import red_hebbian as hebbian
 import matplotlib.pyplot as plt
+import csv
 
 def norm_col(x):
     y = LA.norm(x, axis=1)
@@ -22,7 +23,6 @@ class PerceptronSOM:
     def minimo_indice(self, x):
         y = norm_col(x - self.W)
         min_index = np.argmin(y)
-        #print(min_index)
         return min_index
     
     def coordena_ganadora(self, min_index):
@@ -41,14 +41,17 @@ class PerceptronSOM:
         return  np.e**(-dist_ij2posicion)
 
     def train_som(self, data_set, eta=0.1, sigma=5, epocas=1000):
-        it = 0
+        factor = 10**int(log(eta,10)-2)*0.25
+        factor_sigma = sigma/3
+        iterador_fase = 1
+        tamano_fase = int(epocas / 3)
         eta_inicial = eta
         sigma_inicial = sigma
-        t1_sigma = float(epocas) / float(log(sigma_inicial, 2))
-        t2_eta = float(epocas)
+        #t1_sigma = float(epocas) / float(log(sigma_inicial, 2))
+        #t2_eta = float(epocas)
         for epoca in range(epocas):
-            print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- eta: %f  -- inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
-                (len(data_set), epoca, epocas, eta, eta_inicial, sigma, sigma_inicial, self.filas_output, self.columnas_output))
+            print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- iterador fase %d/%d -- eta: %f  -- inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
+                (len(data_set), epoca, epocas, iterador_fase, tamano_fase, eta, eta_inicial, sigma, sigma_inicial, self.filas_output, self.columnas_output))
 
             coordenada_ganadora = []
 
@@ -68,10 +71,25 @@ class PerceptronSOM:
                         delta = fx_vecindad * y
                         self.W[posicion_matriz_pesos] += eta * delta
 
+            # Actualizo ETA y SIGMA de la epoca
+            eta_nuevo = eta - factor
+            sigma_nuevo = sigma - (sigma*0.005)
+            if eta_nuevo > 0:
+                    eta = eta_nuevo
+            if sigma_nuevo > 0:
+                    sigma = sigma_nuevo
 
-            it+=1
-            if it < (epocas * 0.6):
-                sigma, eta = self.variar_sigma_eta(it, sigma_inicial, t1_sigma, eta_inicial, t2_eta)
+            # Actualizo ETA y SIGMA de la fase
+            if iterador_fase == tamano_fase:
+                sigma_nuevo = sigma - (sigma_inicial/3.5)
+                eta_nuevo = eta_inicial / 10
+                if sigma_nuevo > 0:
+                    sigma = sigma_nuevo
+                if eta_nuevo > 0:
+                    eta = eta_nuevo
+                factor = 10 ** int(log(eta,10)-3) * 0.50
+                iterador_fase = 0
+            iterador_fase +=1
 
         return self
 
@@ -80,7 +98,7 @@ class PerceptronSOM:
         new_eta = eta_0 * (np.e ** (-(iteration_number / t2_eta)))
         return new_sigma, new_eta
 
-    def calcular_y_graficar(self, data_set, categorias):
+    def calcular_y_graficar(self, data_set, categorias, out_file_name):
         cantidad_entradas = len(data_set)
         matriz_neuronas = []
         for i in range(self.filas_output):
@@ -91,7 +109,6 @@ class PerceptronSOM:
         for i in range(cantidad_entradas):
             x = np.matrix(data_set[i])
             min_index = self.minimo_indice(x)
-            print(min_index)
             coordenada = self.coordena_ganadora(min_index)
             matriz_neuronas[coordenada[0]][coordenada[1]].append(categorias[i])
 
@@ -106,12 +123,25 @@ class PerceptronSOM:
         cmap = plt.get_cmap('jet', 9)
         plt.matshow(resultados, cmap=cmap)
         plt.colorbar()
-        plt.show()
+        #plt.show()
+        plt.savefig(out_file_name)
 
     def salvar_matriz_pesos(self, file_name):
-        print("FUNCIONALIDAD PARA SALVAR PESOS EN ARCHIVO NO IMPLEMENTADA")
+        np.savetxt(file_name, self.W, delimiter=",")
         return
 
     def setear_matriz_pesos(self, file_name):
-        print("FUNCIONALIDAD PARA LEER PESOS DE ARCHIVO NO IMPLEMENTADA")
+        def setear_matriz_pesos(self, nombre_archivo):
+            f = open(nombre_archivo, 'rt')
+            matriz_pesos = []
+            try:
+                reader = csv.reader(f)
+                for row in reader:
+                    matriz_pesos_row = []
+                    for i in row:
+                        matriz_pesos_row.append(float(i))
+                    matriz_pesos.append(matriz_pesos_row)
+            finally:
+                f.close()
+            self.W = matriz_pesos
         return

@@ -1,5 +1,5 @@
 import red_som as som
-import red_hebbian as habbian
+import red_hebbian as hebbian
 from random import seed
 import sys
 import ast
@@ -24,10 +24,10 @@ def main():
         archivo_pesos = ''
 
     # Parseo dataset
-    categorias, data_set_entrada = habbian.parsear_dataset()
+    categorias, data_set_entrada = hebbian.parsear_dataset()
 
     # Tamaño de los sets, entrenamiento = 100% validacion = 0%
-    tamanio_entrenamiento = int(len(data_set_entrada) * 0.4)
+    tamanio_entrenamiento = int(len(data_set_entrada) * 0.9)
 
     # Entrenamiento
     datos_entrenamiento_entrada = data_set_entrada[:tamanio_entrenamiento]
@@ -49,10 +49,8 @@ def main():
 
     # Grafico
     red.calcular_y_graficar(datos_entrenamiento_entrada, categorias_entrenamiento)
-    #resultados_entrenamiento = red.testear_red(datos_entrenamiento_entrada, categorias_entrenamiento)
-    #hebbian.Hebbian.graficar(resultados_entrenamiento, categorias_entrenamiento)
-    #resultados_validacion = red.testear_red(datos_validacion_entrada, categorias_validacion)
-    #hebbian.Hebbian.graficar(resultados_validacion, categorias_validacion)
+    red.calcular_y_graficar(datos_validacion_entrada, categorias_validacion)
+
 
 # Ejecuto la funcion principal
 main()
