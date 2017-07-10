@@ -6,13 +6,16 @@ import matplotlib.pyplot as plt
 import csv
 from matplotlib import colors
 
+
 def norm_col(x):
     y = LA.norm(x, axis=1)
     return y
 
+
 def flatten(x): #debe ser una matriz x
     y = np.reshape(x,x.shape[0]*x.shape[1])
     return y
+
 
 class PerceptronSOM:
     def __init__(self, n_entrada, filas_salida, columnas_salida):
@@ -43,16 +46,14 @@ class PerceptronSOM:
 
     def train_som(self, data_set, eta=0.1, sigma=5, epocas=1000):
         factor = 10**int(log(eta,10)-2)*0.25
-        factor_sigma = sigma/3
         iterador_fase = 1
         tamano_fase = int(epocas / 3)
         eta_inicial = eta
         sigma_inicial = sigma
         for epoca in range(epocas):
-            print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- iterador fase %d/%d -- eta: %f  -- inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
+            print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- iterador fase %d/%d -- eta: %f  -- '
+                  'inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
                 (len(data_set), epoca, epocas, iterador_fase, tamano_fase, eta, eta_inicial, sigma, sigma_inicial, self.filas_output, self.columnas_output))
-
-            coordenada_ganadora = []
 
             # Para cada documento
             for x in data_set:

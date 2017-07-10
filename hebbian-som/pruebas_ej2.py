@@ -3,6 +3,7 @@
 import red_hebbian as hebbian
 import red_som as som
 
+
 # Algoritmo de pruebas
 def pruebas_red_hebbiana():
         for filas_salida in [10]:
@@ -26,6 +27,7 @@ def pruebas_red_hebbiana():
                         archivo_salida_img_entrenamiento = r'imagenes/som_%d_%d_%s_%d_train.png' % (filas_salida, epocas, str_eta, sigma)
                         archivo_salida_img_validacion = r'imagenes/som_%d_%d_%s_%d_val.png' % (filas_salida, epocas, str_eta, sigma)
 
+                        #red.setear_matriz_pesos(archivo_salida_cvs)
                         red.salvar_matriz_pesos(archivo_salida_cvs)
                         red.calcular_y_graficar(datos_entrenamiento_entrada, categorias_entrenamiento, archivo_salida_img_entrenamiento)
                         red.calcular_y_graficar(datos_validacion_entrada, categorias_validacion, archivo_salida_img_validacion)
