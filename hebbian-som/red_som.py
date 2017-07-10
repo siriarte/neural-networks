@@ -4,6 +4,7 @@ from numpy import linalg as LA
 import red_hebbian as hebbian
 import matplotlib.pyplot as plt
 import csv
+from matplotlib import colors
 
 def norm_col(x):
     y = LA.norm(x, axis=1)
@@ -47,8 +48,6 @@ class PerceptronSOM:
         tamano_fase = int(epocas / 3)
         eta_inicial = eta
         sigma_inicial = sigma
-        #t1_sigma = float(epocas) / float(log(sigma_inicial, 2))
-        #t2_eta = float(epocas)
         for epoca in range(epocas):
             print('ENTRENANDO -> dataset: %d -- epoca: %d/%d -- iterador fase %d/%d -- eta: %f  -- inicial_eta: %f -- sigma: %f -- inical_sigma:%f -- filas: %d -- columnas %d' %
                 (len(data_set), epoca, epocas, iterador_fase, tamano_fase, eta, eta_inicial, sigma, sigma_inicial, self.filas_output, self.columnas_output))
@@ -93,11 +92,6 @@ class PerceptronSOM:
 
         return self
 
-    def variar_sigma_eta(self, iteration_number, sigma_0, t1_sigma, eta_0, t2_eta):
-        new_sigma = sigma_0 * (np.e ** (-(iteration_number / t1_sigma)))
-        new_eta = eta_0 * (np.e ** (-(iteration_number / t2_eta)))
-        return new_sigma, new_eta
-
     def calcular_y_graficar(self, data_set, categorias, out_file_name):
         cantidad_entradas = len(data_set)
         matriz_neuronas = []
@@ -120,8 +114,9 @@ class PerceptronSOM:
                 else:
                     resultados[i][j] = 0
 
-        cmap = plt.get_cmap('jet', 9)
-        plt.matshow(resultados, cmap=cmap)
+        colores = ['w', 'green', 'blue', 'm', 'cyan', 'steelblue', 'gray', 'indigo', 'lightpink', 'red', 'yellow']
+        mapa_colores = colors.ListedColormap(colores)
+        plt.matshow(resultados, cmap=mapa_colores, norm=colors.BoundaryNorm(range(len(colores)), mapa_colores.N))
         plt.colorbar()
         #plt.show()
         plt.savefig(out_file_name)
@@ -130,18 +125,16 @@ class PerceptronSOM:
         np.savetxt(file_name, self.W, delimiter=",")
         return
 
-    def setear_matriz_pesos(self, file_name):
-        def setear_matriz_pesos(self, nombre_archivo):
-            f = open(nombre_archivo, 'rt')
-            matriz_pesos = []
-            try:
-                reader = csv.reader(f)
-                for row in reader:
-                    matriz_pesos_row = []
-                    for i in row:
-                        matriz_pesos_row.append(float(i))
-                    matriz_pesos.append(matriz_pesos_row)
-            finally:
-                f.close()
-            self.W = matriz_pesos
-        return
+    def setear_matriz_pesos(self, nombre_archivo):
+        f = open(nombre_archivo, 'rt')
+        matriz_pesos = []
+        try:
+            reader = csv.reader(f)
+            for row in reader:
+                matriz_pesos_row = []
+                for i in row:
+                    matriz_pesos_row.append(float(i))
+                matriz_pesos.append(matriz_pesos_row)
+        finally:
+            f.close()
+        self.W = matriz_pesos
