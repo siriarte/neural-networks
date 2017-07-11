@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 FILE_PATH_DATASET = 'tp2_training_dataset.csv'
-NEURONAS_SALIDA = 3
+
 
 # Parser dataset
 def parsear_dataset():
@@ -23,13 +23,13 @@ def parsear_dataset():
         f.close()
     return categoria, dataset
 
+
 def centrar_matriz(matriz):
     matriz_t = np.array(matriz).T
     ret = []
     for columna in matriz_t:
         media = np.mean(columna)
         ret.append(columna-media)
-
     return np.array(ret).T
 
 
@@ -56,12 +56,12 @@ class Hebbian(object):
         Y = []
         Z = []
         for elem in datos:
-            X.append(elem[2])
+            X.append(elem[0])
             Y.append(elem[1])
-            Z.append(elem[0])
-        cmap = plt.get_cmap('jet', 8)
-        ax.scatter(X, Y, Z, c=columna_clases, cmap=cmap)
-        ax.view_init(30, 0)
+            Z.append(elem[2])
+        #cmap = plt.get_cmap('jet', 4)
+        ax.scatter(X, Y, Z, c=columna_clases)
+        #ax.view_init(30, 0)
         plt.draw()
         plt.show()
 
@@ -103,12 +103,11 @@ class Hebbian(object):
                         for k in range(intervalo):
                             #X~_i += Y_k.W_ik // mini - delta
                             x += y[k] * self.W[k][i]
-
                         #DeltaW_ij = eta.(X_i - X~_i).Y_j
-                        w_delta.append(eta * (X[i] - x) * y[j])
+                        w_delta.append(eta * (X[i] - x) * y[j]) #como se ordenan aca?
 
                     # W += DeltaW
-                    self.W[output] = np.sum([self.W[output], np.array(w_delta)], axis=0)
+                    self.W[j] = np.sum([self.W[j], np.array(w_delta)], axis=0)
 
     def testear_red(self, dataset, clases):
         resultados = []

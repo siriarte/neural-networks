@@ -5,7 +5,7 @@ import red_hebbian as hebbian
 # Algoritmo de pruebas
 def pruebas_red_hebbiana():
     for algoritmo in ['oja', 'sanger']:
-        for neuronas_salida in [3, 9]:
+        for neuronas_salida in [9]:
             for epocas in [100, 200, 300]:
                 for eta in [0.0001, 0.001, 0.01]:
                     categorias, dataset = hebbian.parsear_dataset()
