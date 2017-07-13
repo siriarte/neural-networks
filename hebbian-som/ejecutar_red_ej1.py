@@ -45,9 +45,15 @@ def main():
 
     # Grafico
     resultados_entrenamiento = red.testear_red(datos_entrenamiento_entrada, categorias_entrenamiento)
-    hebbian.Hebbian.graficar(resultados_entrenamiento, categorias_entrenamiento)
     resultados_validacion = red.testear_red(datos_validacion_entrada, categorias_validacion)
-    hebbian.Hebbian.graficar(resultados_validacion, categorias_validacion)
+    if cantidad_neuronas_salida == 3:
+        hebbian.Hebbian.graficar(resultados_entrenamiento, categorias_entrenamiento)
+        hebbian.Hebbian.graficar(resultados_validacion, categorias_validacion)
+    elif cantidad_neuronas_salida == 9:
+        red.graficar_en_3_partes(resultados_entrenamiento, categorias_entrenamiento)
+        red.graficar_en_3_partes(resultados_validacion, categorias_validacion)
+    else:
+        print('Solo se pueden realizar graficos para 3 y 9 neuronas de salida')
 
 # Ejecuto la funcion principal
 main()
